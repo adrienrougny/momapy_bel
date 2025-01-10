@@ -133,22 +133,19 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _complex_abundance_to_string(cls, complex_abundance):
-        if (
-            complex_abundance.namespace is not None
-            and complex_abundance.identifier is not None
-        ):
-            args = [
-                cls._make_namespace_identifier_arg(
-                    complex_abundance.namespace, complex_abundance.identifier
-                )
-            ]
-        else:
+        if complex_abundance.members:
             args = sorted(
                 [
                     cls._bel_element_to_string(member)
                     for member in complex_abundance.members
                 ]
             )
+        else:
+            args = [
+                cls._make_namespace_identifier_arg(
+                    complex_abundance.namespace, complex_abundance.identifier
+                )
+            ]
         if complex_abundance.location is not None:
             args.append(cls._bel_element_to_string(complex_abundance.location))
         return cls._make_function_string("complex", args)
