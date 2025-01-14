@@ -173,11 +173,7 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _degradation_to_string(cls, degradation):
-        args = [
-            cls._make_namespace_identifier_arg(
-                degradation.namespace, degradation.identifier
-            )
-        ]
+        args = [cls._bel_element_to_string(degradation.abundance)]
         return cls._make_function_string("deg", args)
 
     @classmethod
