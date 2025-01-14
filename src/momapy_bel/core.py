@@ -75,8 +75,7 @@ class CompositeAbundance(Abundance):
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class Degradation(BELModelElement):
-    namespace: str
-    identifier: str
+    abundance: Abundance
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
