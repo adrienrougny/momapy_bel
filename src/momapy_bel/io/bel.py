@@ -59,10 +59,8 @@ class BELWriter(momapy.io.Writer):
     }
 
     @classmethod
-    def write(
-        cls, map_: momapy_bel.core.BELModel, file_path: str, annotations
-    ):
-        bel_string = cls._bel_model_to_string(map_, annotations)
+    def write(cls, obj: momapy_bel.core.BELModel, file_path: str, annotations):
+        bel_string = cls._bel_model_to_string(obj, annotations)
         with open(file_path, "w") as f:
             f.write(bel_string)
 
