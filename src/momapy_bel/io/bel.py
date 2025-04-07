@@ -688,8 +688,6 @@ class BELWriter(momapy.io.Writer):
                     )
                 )
             ):
-                if not with_reactions_as_statements:
-                    print(type(bel_statement))
                 unset_strings = []
                 bel_statement_annotations = bel_annotations.get(bel_statement)
                 if bel_statement_annotations is not None:
