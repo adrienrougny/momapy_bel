@@ -76,9 +76,18 @@ class BELWriter(momapy.io.Writer):
         namespace_definitions,
         annotation_definitions,
         annotations,
+        with_abundances_as_statements=False,
+        with_biological_processes_as_statements=False,
+        with_reactions_as_statements=True,
     ):
         bel_string = cls._bel_model_to_string(
-            obj, namespace_definitions, annotation_definitions, annotations
+            obj,
+            namespace_definitions,
+            annotation_definitions,
+            annotations,
+            with_abundances_as_statements=with_abundances_as_statements,
+            with_biological_processes_as_statements=with_biological_processes_as_statements,
+            with_reactions_as_statements=with_reactions_as_statements,
         )
         with open(file_path, "w") as f:
             f.write(bel_string)
@@ -632,6 +641,9 @@ class BELWriter(momapy.io.Writer):
         bel_namespace_definitions,
         bel_annotation_definitions,
         bel_annotations,
+        with_abundances_as_statements=False,
+        with_biological_processes_as_statements=False,
+        with_reactions_as_statements=True,
     ):
         output_strings = []
         bel_model_annotations = bel_annotations.get(bel_model)
@@ -651,21 +663,39 @@ class BELWriter(momapy.io.Writer):
             )
             output_strings.append(define_string)
         for bel_statement in bel_model.statements:
-            unset_strings = []
-            bel_statement_annotations = bel_annotations.get(bel_statement)
-            if bel_statement_annotations is not None:
-                for bel_annotation in bel_statement_annotations:
-                    set_string = cls._bel_annotation_to_string(
-                        bel_annotation, set_or_unset="set"
+            if (
+                (
+                    with_abundances_as_statements
+                    or not isinstance(bel_statement, momapy_bel.core.Abundance)
+                )
+                and (
+                    with_biological_processes_as_statements
+                    or not isinstance(
+                        bel_statement, momapy_bel.core.BiologicalProcess
                     )
-                    output_strings.append(set_string)
-                    unset_string = cls._bel_annotation_to_string(
-                        bel_annotation, set_or_unset="unset"
-                    )
-                    unset_strings.append(unset_string)
-            output_strings.append(cls._bel_element_to_string(bel_statement))
-            for unset_string in unset_strings:
-                output_strings.append(unset_string)
+                )
+                and (
+                    with_reactions_as_statements
+                    or not isinstance(bel_statement, momapy_bel.core.Reaction)
+                )
+            ):
+                unset_strings = []
+                bel_statement_annotations = bel_annotations.get(bel_statement)
+                if bel_statement_annotations is not None:
+                    for bel_annotation in bel_statement_annotations:
+                        set_string = cls._bel_annotation_to_string(
+                            bel_annotation, set_or_unset="set"
+                        )
+                        output_strings.append(set_string)
+                        unset_string = cls._bel_annotation_to_string(
+                            bel_annotation, set_or_unset="unset"
+                        )
+                        unset_strings.append(unset_string)
+                output_strings.append(
+                    cls._bel_element_to_string(bel_statement)
+                )
+                for unset_string in unset_strings:
+                    output_strings.append(unset_string)
         bel_string = "\n".join(output_strings)
         return bel_string
 
