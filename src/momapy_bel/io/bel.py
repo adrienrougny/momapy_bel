@@ -1,3 +1,5 @@
+import urllib.parse
+
 import momapy.io
 import momapy_bel.core
 
@@ -50,17 +52,34 @@ class BELWriter(momapy.io.Writer):
         momapy_bel.core.SubProcessOf: "_subprocess_of_to_string",
         momapy_bel.core.TranscribedTo: "_transcribed_to_to_string",
         momapy_bel.core.TranslatedTo: "_translated_to",
-        (momapy_bel.core.Citation, "set"): "_citation_to_set_string",
-        (momapy_bel.core.Citation, "unset"): "_citation_to_unset_string",
         (
-            momapy_bel.core.DocumentAnnotation,
+            momapy_bel.core.BELGenericAnnotation,
+            "set",
+        ): "_generic_annotation_to_set_string",
+        (
+            momapy_bel.core.BELGenericAnnotation,
+            "unset",
+        ): "_generic_annotation_to_unset_string",
+        (
+            momapy_bel.core.BELDocumentAnnotation,
             "set",
         ): "_document_annotation_to_set_string",
+        momapy_bel.core.BELGenericAnnotationDefinition: "_annotation_definition_to_define_string",
+        momapy_bel.core.BELNamespaceDefinition: "_namespace_definition_to_define_string",
     }
 
     @classmethod
-    def write(cls, obj: momapy_bel.core.BELModel, file_path: str, annotations):
-        bel_string = cls._bel_model_to_string(obj, annotations)
+    def write(
+        cls,
+        obj: momapy_bel.core.BELModel,
+        file_path: str,
+        namespace_definitions,
+        annotation_definitions,
+        annotations,
+    ):
+        bel_string = cls._bel_model_to_string(
+            obj, namespace_definitions, annotation_definitions, annotations
+        )
         with open(file_path, "w") as f:
             f.write(bel_string)
 
@@ -535,14 +554,53 @@ class BELWriter(momapy.io.Writer):
         )
 
     @classmethod
-    def _citation_to_set_string(cls, citation):
+    def _generic_annotation_to_set_string(cls, annotation):
         return cls._make_set_string(
-            "Citation", [citation.namespace, citation.identifier]
+            annotation.definition.name, annotation.args
         )
 
     @classmethod
-    def _citation_to_unset_string(cls, citation):
-        return cls._make_unset_string("Citation")
+    def _generic_annotation_to_unset_string(cls, annotation):
+        return cls._make_unset_string(annotation.definition.name)
+
+    @classmethod
+    def _is_url(cls, s):
+        result = urllib.parse.urlparse(s)
+        if result.scheme != "":
+            return True
+        return False
+
+    @classmethod
+    def _get_as_type_from_as(cls, as_):
+        if isinstance(as_, list):
+            as_type = "LIST"
+        elif cls._is_url(as_):
+            as_type = "URL"
+        else:
+            as_type = "PATTERN"
+        return as_type
+
+    @classmethod
+    def _annotation_definition_to_define_string(cls, annotation_definition):
+        as_type = cls._get_as_type_from_as(annotation_definition.as_)
+        if isinstance(annotation_definition.as_, str):
+            as_ = [annotation_definition.as_]
+        else:
+            as_ = annotation_definition.as_
+        return cls._make_define_string(
+            "ANNOTATION", annotation_definition.name, as_type, as_
+        )
+
+    @classmethod
+    def _namespace_definition_to_define_string(cls, namespace_definition):
+        as_type = cls._get_as_type_from_as(namespace_definition.as_)
+        if isinstance(namespace_definition.as_, str):
+            as_ = [namespace_definition.as_]
+        else:
+            as_ = namespace_definition.as_
+        return cls._make_define_string(
+            "NAMESPACE", namespace_definition.name, as_type, as_
+        )
 
     @classmethod
     def _document_annotation_to_set_string(cls, document_annotation):
@@ -568,7 +626,13 @@ class BELWriter(momapy.io.Writer):
         return "\n".join(output_strings)
 
     @classmethod
-    def _bel_model_to_string(cls, bel_model, bel_annotations):
+    def _bel_model_to_string(
+        cls,
+        bel_model,
+        bel_namespace_definitions,
+        bel_annotation_definitions,
+        bel_annotations,
+    ):
         output_strings = []
         bel_model_annotations = bel_annotations.get(bel_model)
         if bel_model_annotations is not None:
@@ -576,6 +640,16 @@ class BELWriter(momapy.io.Writer):
                 output_strings.append(
                     cls._bel_annotation_to_string(bel_model_annotation)
                 )
+        for bel_namespace_definition in bel_namespace_definitions:
+            define_string = cls._namespace_definition_to_define_string(
+                bel_namespace_definition
+            )
+            output_strings.append(define_string)
+        for bel_annotation_definition in bel_annotation_definitions:
+            define_string = cls._annotation_definition_to_define_string(
+                bel_annotation_definition
+            )
+            output_strings.append(define_string)
         for bel_statement in bel_model.statements:
             unset_strings = []
             bel_statement_annotations = bel_annotations.get(bel_statement)
@@ -597,6 +671,8 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _make_namespace_identifier_arg(cls, namespace, identifier):
+        if not identifier.isalnum():
+            identifier = f'"{identifier}"'
         if namespace:
             return f"{namespace}:{identifier}"
         else:
@@ -611,16 +687,27 @@ class BELWriter(momapy.io.Writer):
         return f"{source} {relation_symbol} {target}"
 
     @classmethod
-    def _make_set_string(cls, annotation_name, args):
+    def _make_set_or_define_args_string(cls, args):
+        args = [f'"{arg}"' for arg in args]
         if len(args) > 1:
             args_string = f"{{{', '.join(args)}}}"
         else:
             args_string = str(args[0])
+        return args_string
+
+    @classmethod
+    def _make_set_string(cls, annotation_name, args):
+        args_string = cls._make_set_or_define_args_string(args)
         return f"SET {annotation_name} = {args_string}"
 
     @classmethod
     def _make_unset_string(cls, annotation_name):
         return f"UNSET {annotation_name}"
+
+    @classmethod
+    def _make_define_string(cls, define_type, definition_name, as_type, as_):
+        args_string = cls._make_set_or_define_args_string(as_)
+        return f"DEFINE {define_type} {definition_name} AS {as_type} {args_string}"
 
     @classmethod
     def _get_transformation_func(cls, key):

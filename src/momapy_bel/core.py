@@ -313,21 +313,30 @@ class TranslatedTo(BELModelElement):
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
+class BELNamespaceDefinition:
+    name: str
+    as_: str | tuple[str]
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BELGenericAnnotationDefinition:
+    name: str
+    as_: str | tuple[str]
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class BELAnnotation:
     pass
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
-class Citation(BELAnnotation):
-    namespace: str
-    identifier: str
-
-    def __str__(self):
-        return f"Citation = {{{self.namespace}, {self.identifier}}}"
+class BELGenericAnnotation(BELAnnotation):
+    definition: BELGenericAnnotationDefinition | None = None
+    args: tuple[str]
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
-class DocumentAnnotation(BELAnnotation):
+class BELDocumentAnnotation(BELAnnotation):
     name: str | None = None
     authors: str | None = None
     contact_info: str | None = None
