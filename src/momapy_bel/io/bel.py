@@ -79,6 +79,7 @@ class BELWriter(momapy.io.Writer):
         with_abundances_as_statements=False,
         with_biological_processes_as_statements=False,
         with_reactions_as_statements=True,
+        with_degradations_as_statements=True,
     ):
         bel_string = cls._bel_model_to_string(
             obj,
@@ -88,6 +89,7 @@ class BELWriter(momapy.io.Writer):
             with_abundances_as_statements=with_abundances_as_statements,
             with_biological_processes_as_statements=with_biological_processes_as_statements,
             with_reactions_as_statements=with_reactions_as_statements,
+            with_degradations_as_statements=with_degradations_as_statements,
         )
         with open(file_path, "w") as f:
             f.write(bel_string)
@@ -644,6 +646,7 @@ class BELWriter(momapy.io.Writer):
         with_abundances_as_statements=False,
         with_biological_processes_as_statements=False,
         with_reactions_as_statements=True,
+        with_degradations_as_statements=True,
     ):
         output_strings = []
         bel_model_annotations = bel_annotations.get(bel_model)
@@ -678,7 +681,15 @@ class BELWriter(momapy.io.Writer):
                     with_reactions_as_statements
                     or not isinstance(bel_statement, momapy_bel.core.Reaction)
                 )
+                and (
+                    with_degradations_as_statements
+                    or not isinstance(
+                        bel_statement, momapy_bel.core.Degradation
+                    )
+                )
             ):
+                if not with_reactions_as_statements:
+                    print(type(bel_statement))
                 unset_strings = []
                 bel_statement_annotations = bel_annotations.get(bel_statement)
                 if bel_statement_annotations is not None:
