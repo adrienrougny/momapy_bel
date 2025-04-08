@@ -80,6 +80,7 @@ class BELWriter(momapy.io.Writer):
         with_biological_processes_as_statements=False,
         with_reactions_as_statements=True,
         with_degradations_as_statements=True,
+        with_translocations_as_statements=True,
     ):
         bel_string = cls._bel_model_to_string(
             obj,
@@ -90,6 +91,7 @@ class BELWriter(momapy.io.Writer):
             with_biological_processes_as_statements=with_biological_processes_as_statements,
             with_reactions_as_statements=with_reactions_as_statements,
             with_degradations_as_statements=with_degradations_as_statements,
+            with_translocations_as_statements=with_translocations_as_statements,
         )
         with open(file_path, "w") as f:
             f.write(bel_string)
@@ -648,6 +650,7 @@ class BELWriter(momapy.io.Writer):
         with_biological_processes_as_statements=False,
         with_reactions_as_statements=True,
         with_degradations_as_statements=True,
+        with_translocations_as_statements=True,
     ):
         output_strings = []
         bel_model_annotations = bel_annotations.get(bel_model)
@@ -686,6 +689,12 @@ class BELWriter(momapy.io.Writer):
                     with_degradations_as_statements
                     or not isinstance(
                         bel_statement, momapy_bel.core.Degradation
+                    )
+                )
+                and (
+                    with_translocations_as_statements
+                    or not isinstance(
+                        bel_statement, momapy_bel.core.Translocation
                     )
                 )
             ):
