@@ -360,6 +360,7 @@ class BELWriter(momapy.io.Writer):
     @classmethod
     def _translocation_to_string(cls, translocation):
         args = [
+            cls._bel_element_to_string(translocation.abundance),
             cls._make_function_string(
                 "fromLoc",
                 [
