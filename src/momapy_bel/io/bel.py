@@ -298,6 +298,10 @@ class BELWriter(momapy.io.core.Writer):
         ]
         if protein_abundance.location is not None:
             args.append(cls._bel_element_to_string(protein_abundance.location))
+        if protein_abundance.variant is not None:
+            args.append(cls._bel_element_to_string(protein_abundance.variant))
+        if protein_abundance.fragment is not None:
+            args.append(cls._bel_element_to_string(protein_abundance.fragment))
         if protein_abundance.modifications:
             for modification in protein_abundance.modifications:
                 args.append(cls._bel_element_to_string(modification))

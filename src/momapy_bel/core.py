@@ -142,6 +142,7 @@ class ProteinAbundance(Abundance):
     identifier: str | None = None
     fusion: Fusion | None = None
     variant: Variant | None = None
+    fragment: Fragment | None = None
     modifications: tuple[ProteinModification] = dataclasses.field(
         default_factory=tuple
     )
