@@ -1,10 +1,10 @@
 import urllib.parse
 
-import momapy.io
+import momapy.io.core
 import momapy_bel.core
 
 
-class BELWriter(momapy.io.Writer):
+class BELWriter(momapy.io.core.Writer):
     _ELEMENT_CLS_TO_FUNC_NAME = {
         momapy_bel.core.List: "_list_to_string",
         momapy_bel.core.Location: "_location_to_string",
@@ -98,18 +98,13 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _list_to_string(cls, bel_list):
-        args = [
-            cls._bel_element_to_string(element)
-            for element in bel_list.elements
-        ]
+        args = [cls._bel_element_to_string(element) for element in bel_list.elements]
         return cls._make_function_string("list", args)
 
     @classmethod
     def _location_to_string(cls, location):
         args = [
-            cls._make_namespace_identifier_arg(
-                location.namespace, location.identifier
-            )
+            cls._make_namespace_identifier_arg(location.namespace, location.identifier)
         ]
         return cls._make_function_string("loc", args)
 
@@ -137,9 +132,7 @@ class BELWriter(momapy.io.Writer):
     def _activity_to_string(cls, activity):
         args = [cls._bel_element_to_string(activity.abundance)]
         if activity.molecular_activity is not None:
-            args.append(
-                cls._bel_element_to_string(activity.molecular_activity)
-            )
+            args.append(cls._bel_element_to_string(activity.molecular_activity))
         return cls._make_function_string("act", args)
 
     @classmethod
@@ -216,13 +209,9 @@ class BELWriter(momapy.io.Writer):
     @classmethod
     def _fusion_to_string(cls, fusion):
         args = [
-            cls._make_namespace_identifier_arg(
-                fusion.namespace5, fusion.identifier5
-            ),
+            cls._make_namespace_identifier_arg(fusion.namespace5, fusion.identifier5),
             fusion.range5,
-            cls._make_namespace_identifier_arg(
-                fusion.namespace3, fusion.identifier3
-            ),
+            cls._make_namespace_identifier_arg(fusion.namespace3, fusion.identifier3),
             fusion.range3,
         ]
         return cls._make_namespace_identifier_arg("fus", args)
@@ -284,9 +273,7 @@ class BELWriter(momapy.io.Writer):
             )
         ]
         if population_abundance.location is not None:
-            args.append(
-                cls._bel_element_to_string(population_abundance.location)
-            )
+            args.append(cls._bel_element_to_string(population_abundance.location))
         return cls._make_function_string("pop", args)
 
     @classmethod
@@ -342,10 +329,7 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _rna_abundance_to_string(cls, rna_abundance):
-        if (
-            rna_abundance.namespace is not None
-            and rna_abundance.identifier is not None
-        ):
+        if rna_abundance.namespace is not None and rna_abundance.identifier is not None:
             args = [
                 cls._make_namespace_identifier_arg(
                     rna_abundance.namespace, rna_abundance.identifier
@@ -569,9 +553,7 @@ class BELWriter(momapy.io.Writer):
 
     @classmethod
     def _generic_annotation_to_set_string(cls, annotation):
-        return cls._make_set_string(
-            annotation.definition.name, annotation.args
-        )
+        return cls._make_set_string(annotation.definition.name, annotation.args)
 
     @classmethod
     def _generic_annotation_to_unset_string(cls, annotation):
@@ -621,9 +603,7 @@ class BELWriter(momapy.io.Writer):
         output_strings = []
         if document_annotation.name is not None:
             output_strings.append(
-                cls._make_set_string(
-                    "DOCUMENT Name", [document_annotation.name]
-                )
+                cls._make_set_string("DOCUMENT Name", [document_annotation.name])
             )
         if document_annotation.description is not None:
             output_strings.append(
@@ -633,9 +613,7 @@ class BELWriter(momapy.io.Writer):
             )
         if document_annotation.authors is not None:
             output_strings.append(
-                cls._make_set_string(
-                    "DOCUMENT Authors", [document_annotation.authors]
-                )
+                cls._make_set_string("DOCUMENT Authors", [document_annotation.authors])
             )
         return "\n".join(output_strings)
 
@@ -677,9 +655,7 @@ class BELWriter(momapy.io.Writer):
                 )
                 and (
                     with_biological_processes_as_statements
-                    or not isinstance(
-                        bel_statement, momapy_bel.core.BiologicalProcess
-                    )
+                    or not isinstance(bel_statement, momapy_bel.core.BiologicalProcess)
                 )
                 and (
                     with_reactions_as_statements
@@ -687,15 +663,11 @@ class BELWriter(momapy.io.Writer):
                 )
                 and (
                     with_degradations_as_statements
-                    or not isinstance(
-                        bel_statement, momapy_bel.core.Degradation
-                    )
+                    or not isinstance(bel_statement, momapy_bel.core.Degradation)
                 )
                 and (
                     with_translocations_as_statements
-                    or not isinstance(
-                        bel_statement, momapy_bel.core.Translocation
-                    )
+                    or not isinstance(bel_statement, momapy_bel.core.Translocation)
                 )
             ):
                 unset_strings = []
@@ -710,9 +682,7 @@ class BELWriter(momapy.io.Writer):
                             bel_annotation, set_or_unset="unset"
                         )
                         unset_strings.append(unset_string)
-                output_strings.append(
-                    cls._bel_element_to_string(bel_statement)
-                )
+                output_strings.append(cls._bel_element_to_string(bel_statement))
                 for unset_string in unset_strings:
                     output_strings.append(unset_string)
         bel_string = "\n".join(output_strings)
@@ -783,4 +753,4 @@ class BELWriter(momapy.io.Writer):
         return bel_string
 
 
-momapy.io.register_writer("bel", BELWriter)
+momapy.io.core.register_writer("bel", BELWriter)
