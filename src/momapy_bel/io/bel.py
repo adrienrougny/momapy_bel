@@ -51,7 +51,7 @@ class BELWriter(momapy.io.core.Writer):
         momapy_bel.core.Regulates: "_regulates_to_string",
         momapy_bel.core.SubProcessOf: "_subprocess_of_to_string",
         momapy_bel.core.TranscribedTo: "_transcribed_to_to_string",
-        momapy_bel.core.TranslatedTo: "_translated_to",
+        momapy_bel.core.TranslatedTo: "_translated_to_to_string",
         (
             momapy_bel.core.BELGenericAnnotation,
             "set",
@@ -236,8 +236,8 @@ class BELWriter(momapy.io.core.Writer):
             args = [cls._bel_element_to_string(gene_abundance.fusion)]
         if gene_abundance.location is not None:
             args.append(cls._bel_element_to_string(gene_abundance.location))
-        if gene_abundance.variant is not None:
-            args.append(cls._bel_element_to_string(gene_abundance.variant))
+        for variant in gene_abundance.variants:
+            args.append(cls._bel_element_to_string(variant))
         return cls._make_function_string("g", args)
 
     @classmethod
@@ -252,8 +252,8 @@ class BELWriter(momapy.io.core.Writer):
             args = [cls._bel_element_to_string(microrna.fusion)]
         if microrna.location is not None:
             args.append(cls._bel_element_to_string(microrna.location))
-        if microrna.variant is not None:
-            args.append(cls._bel_element_to_string(microrna.variant))
+        for variant in microrna.variants:
+            args.append(cls._bel_element_to_string(variant))
         return cls._make_function_string("m", args)
 
     @classmethod
@@ -298,8 +298,8 @@ class BELWriter(momapy.io.core.Writer):
         ]
         if protein_abundance.location is not None:
             args.append(cls._bel_element_to_string(protein_abundance.location))
-        if protein_abundance.variant is not None:
-            args.append(cls._bel_element_to_string(protein_abundance.variant))
+        for variant in protein_abundance.variants:
+            args.append(cls._bel_element_to_string(variant))
         if protein_abundance.fragment is not None:
             args.append(cls._bel_element_to_string(protein_abundance.fragment))
         if protein_abundance.modifications:
@@ -343,8 +343,8 @@ class BELWriter(momapy.io.core.Writer):
             args = [cls._bel_element_to_string(rna_abundance.fusion)]
         if rna_abundance.location is not None:
             args.append(cls._bel_element_to_string(rna_abundance.location))
-        if rna_abundance.variant is not None:
-            args.append(cls._bel_element_to_string(rna_abundance.variant))
+        for variant in rna_abundance.variants:
+            args.append(cls._bel_element_to_string(variant))
         return cls._make_function_string("r", args)
 
     @classmethod

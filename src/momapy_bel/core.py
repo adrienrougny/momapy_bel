@@ -104,7 +104,7 @@ class GeneAbundance(Abundance):
     namespace: str | None
     identifier: str | None
     fusion: Fusion | None
-    variant: Variant | None
+    variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -112,7 +112,7 @@ class MicroRNAAbundance(Abundance):
     namespace: str | None
     identifier: str | None
     fusion: Fusion | None
-    variant: Variant | None
+    variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -141,7 +141,7 @@ class ProteinAbundance(Abundance):
     namespace: str | None = None
     identifier: str | None = None
     fusion: Fusion | None = None
-    variant: Variant | None = None
+    variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
     fragment: Fragment | None = None
     modifications: tuple[ProteinModification] = dataclasses.field(
         default_factory=tuple
@@ -163,7 +163,7 @@ class RNAAbundance(Abundance):
     namespace: str | None
     identifier: str | None
     fusion: Fusion | None
-    variant: Variant | None
+    variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
