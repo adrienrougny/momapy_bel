@@ -1,0 +1,4 @@
+SET	Confidence = "High"
+SET Confidence= "Low"
+SET  Species  =  "9606"
+p(HGNC:APP) -> p(HGNC:BACE1)

@@ -1,0 +1,3 @@
+complex(p(HGNC:BACE1),p(HGNC:APP))
+complex(SCOMP:"Nfkb Complex")
+composite(p(HGNC:WASF1), p(HGNC:WASF2), p(HGNC:WASF2))

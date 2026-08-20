@@ -1,0 +1,3 @@
+p(HGNC:APP, frag("?", "41kD"))
+p(HGNC:MAPT, frag("672_713"))
+p(HGNC:TAU, frag(672_713))

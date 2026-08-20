@@ -1,0 +1,6 @@
+p(HGNC:APP) eq p(HGNC:A4)
+p(HGNC:APP) equivalentTo p(HGNC:A4)
+p(HGNC:A) noCorrelation p(HGNC:B)
+p(HGNC:A) rateLimitingStepFor bp(GO:x)
+r(HGNC:A) >> p(HGNC:A)
+g(HGNC:A) :> r(HGNC:A)

@@ -1,0 +1,9 @@
+# a comment mentioning SET DOCUMENT and p(HGNC:X)
+SET DOCUMENT Name = "Test Document"
+SET DOCUMENT Version = "1.0"
+SET DOCUMENT ContactInfo = "a@example.org"
+
+SET Support = "set of related networks \
+    spanning two lines"
+p(HGNC:APP) -> \
+    p(HGNC:BACE1)

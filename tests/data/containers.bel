@@ -1,0 +1,4 @@
+p(HGNC:APP) hasMembers list(p(HGNC:A), p(HGNC:B))
+rxn(reactants(a(CHEBI:x)), products(a(CHEBI:y)))
+reaction(reactants(a(CHEBI:x)), products(a(CHEBI:y)))
+tloc(p(HGNC:APP), fromLoc(GO:intracellular), toLoc(GO:"extracellular space"))

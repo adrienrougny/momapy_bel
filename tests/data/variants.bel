@@ -1,0 +1,4 @@
+p(MGI:App, var("K,670,N"), var("M,671,L"))
+p(HGNC:MAPT, var("p.Tyr633X"))
+p(HGNC:SNCA, pmod(Ph, P, 213))
+p(HGNC:TAU, pmod(MOD:"PhosphoSerine"))

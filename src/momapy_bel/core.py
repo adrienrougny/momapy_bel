@@ -1,6 +1,7 @@
 import dataclasses
 
 import momapy.core
+import momapy.core.map
 import momapy.builder
 
 
@@ -57,6 +58,16 @@ class CellSurfaceExpression(BELModelElement):
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class ComplexAbundance(Abundance):
+    """A named or member-defined complex abundance.
+
+    `members` is a `frozenset`, so a complex listing the same member twice
+    (a homodimer such as `complex(p(HGNC:NFKB1), p(HGNC:NFKB1))`) collapses to
+    a single member. BEL 2.1.3 defines no stoichiometry and says nothing about
+    member uniqueness, so nothing distinguishes the collapsed form from the
+    written one; the multiplicity is lost. Revisit only if BEL gains
+    stoichiometry.
+    """
+
     namespace: str | None = None
     identifier: str | None = None
     members: frozenset[Abundance] = dataclasses.field(
@@ -66,6 +77,12 @@ class ComplexAbundance(Abundance):
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CompositeAbundance(Abundance):
+    """A named or member-defined composite abundance.
+
+    `members` is a `frozenset`, so a composite listing the same member twice
+    collapses to a single member; see `ComplexAbundance` for the rationale.
+    """
+
     namespace: str | None = None
     identifier: str | None = None
     members: frozenset[Abundance] = dataclasses.field(
@@ -314,7 +331,19 @@ class TranslatedTo(BELModelElement):
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
-class BELNamespaceDefinition:
+class EquivalentTo(BELModelElement):
+    source: BELModelElement
+    target: BELModelElement
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class NoCorrelation(BELModelElement):
+    source: BELModelElement
+    target: BELModelElement
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BELNamespaceDefinition(BELModelElement):
     name: str
     as_: str | tuple[str]
 
@@ -332,6 +361,16 @@ class BELAnnotation:
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class BELGenericAnnotation(BELAnnotation):
+    """An annotation set on one or more statements.
+
+    `name` is authoritative: four annotation names used by `SET` in real BEL
+    documents (Citation, Support, STATEMENT_GROUP and DOCUMENT) have no
+    `DEFINE ANNOTATION`, so `definition` is `None` for them. `definition` is a
+    convenience back-pointer, populated when a definition exists; the complete
+    set of definitions lives in `ReaderResult.annotation_definitions`.
+    """
+
+    name: str
     definition: BELGenericAnnotationDefinition | None = None
     args: tuple[str]
 
@@ -352,12 +391,29 @@ class BELModel(momapy.core.Model):
     statements: frozenset[BELModelElement] = dataclasses.field(
         default_factory=frozenset
     )
+    namespace_definitions: frozenset[BELNamespaceDefinition] = (
+        dataclasses.field(default_factory=frozenset)
+    )
 
     def is_submodel(self, other):
-        return self.statements.issubset(other.statements)
+        return self.statements.issubset(
+            other.statements
+        ) and self.namespace_definitions.issubset(other.namespace_definitions)
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BELMap(momapy.core.map.Map):
+    """Class for BEL maps.
+
+    BEL support is model only: a `BELMap` carries a `BELModel` and no layout.
+    The inherited `layout` and `layout_model_mapping` fields are always `None`.
+    """
+
+    model: BELModel | None = None
 
 
 BELModelBuilder = momapy.builder.get_or_make_builder_cls(BELModel)
+BELMapBuilder = momapy.builder.get_or_make_builder_cls(BELMap)
 
 
 def _make_namespace_identifier_arg(namespace, identifier):

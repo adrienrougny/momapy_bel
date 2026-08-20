@@ -1,18 +1,34 @@
 [project]
 name = "momapy_bel"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "BEL support for momapy"
 authors = [
     {name = "Adrien Rougny", email = "adrienrougny@gmail.com"},
+]
+dependencies = [
+    "momapy",
+    "pyparsing>=3.1.1",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.entry-points."momapy.readers"]
+bel = "momapy_bel.io.bel:BELReader"
+
+[project.entry-points."momapy.writers"]
+bel = "momapy_bel.io.bel:BELWriter"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
+[dependency-groups]
+test = ["pytest>=8.0"]
+dev = [{include-group = "test"}]
+
+[tool.uv.sources]
+momapy = { path = "/home/rougny/code/momapy", editable = true }
 
 [tool.pdm]
 distribution = true
@@ -20,4 +36,8 @@ distribution = true
 [tool.pdm.dev-dependencies]
 dev = [
     "-e file:///home/rougny/code/momapy#egg=momapy",
+    "pytest>=8.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,8 @@
+SET Confidence = "High"
+SET Species = "9606"
+SET Citation = {"PubMed", "Nature", "12345"}
+p(HGNC:APP) -> p(HGNC:BACE1)
+UNSET {Confidence, Species}
+p(HGNC:APP) -> p(HGNC:MAPT)
+UNSET ALL
+p(HGNC:MAPT)

@@ -1,0 +1,5 @@
+DEFINE NAMESPACE DBSNP AS PATTERN "^rs\d+$"
+DEFINE ANNOTATION Confidence AS LIST {"High", "Medium", "Low"}
+DEFINE ANNOTATION Species AS URL "https://example.org/species.belanno"
+DEFINE NAMESPACE HGNC AS URL "https://example.org/hgnc.belns"
+p(HGNC:APP)

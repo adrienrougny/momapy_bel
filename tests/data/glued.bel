@@ -1,0 +1,4 @@
+DEFINE NAMESPACE HGNC AS URL "https://example.org/hgnc.belns"
+a(CHEBI:methoctramine)isA a(CHEBI:antagonist)
+p(HGNC:APP)->p(HGNC:BACE1)
+p(HGNC:MAPT)-|bp(GO:apoptosis)

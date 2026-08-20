@@ -1,0 +1,5 @@
+SET Support = "some evidence"
+p(HGNC:APP) -> p(HGNC:BACE1)
+UNSET Evidence
+p(HGNC:APP) -> p(HGNC:MAPT)
+UNSET NeverSet
