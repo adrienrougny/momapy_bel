@@ -1,1 +1,1 @@
-p(HGNC:APP) -> gmod(HGNC:X)
+p(HGNC:APP) -> notAFunction(HGNC:X)

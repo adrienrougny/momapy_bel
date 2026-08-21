@@ -207,6 +207,36 @@ def test_protein_modification_arguments_are_positional():
     )
 
 
+def test_gene_modifications():
+    model = _model("variants.bel")
+    assert (
+        momapy_bel.core.GeneAbundance(
+            namespace="HGNC",
+            identifier="APP",
+            fusion=None,
+            modifications=(
+                momapy_bel.core.GeneModification(
+                    namespace="", identifier="Me"
+                ),
+            ),
+        )
+        in model.statements
+    )
+    assert (
+        momapy_bel.core.GeneAbundance(
+            namespace="HGNC",
+            identifier="BACE1",
+            fusion=None,
+            modifications=(
+                momapy_bel.core.GeneModification(
+                    namespace="GO", identifier="DNA methylation"
+                ),
+            ),
+        )
+        in model.statements
+    )
+
+
 def test_quoted_identifiers():
     model = _model("quoted_identifiers.bel")
     identifiers = {statement.identifier for statement in model.statements}
@@ -340,7 +370,7 @@ def test_relation_spellings():
 def test_unknown_function_is_reported():
     with pytest.raises(momapy_bel.io.bel.BELReadingError) as excinfo:
         _model("bad_function.bel")
-    assert "gmod" in str(excinfo.value)
+    assert "notAFunction" in str(excinfo.value)
     assert excinfo.value.failures[0][0] == 1
 
 

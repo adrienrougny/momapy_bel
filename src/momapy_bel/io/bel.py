@@ -4,6 +4,9 @@ Reads and writes BEL (Biological Expression Language) 2.1.3 documents.
 `BELWriter` renders a `BELModel` back to BEL; `BELReader` parses a BEL
 document into a `BELModel` plus the annotation contexts each statement was
 asserted under.
+
+`gmod()` is also read and written, as an extension: it is not part of BEL
+2.1.3, but was introduced by PyBEL and is used by real documents.
 """
 
 import collections
@@ -38,6 +41,7 @@ class BELWriter(momapy.io.core.Writer):
         momapy_bel.core.Fragment: "_fragment_to_string",
         momapy_bel.core.Fusion: "_fusion_to_string",
         momapy_bel.core.Variant: "_variant_to_string",
+        momapy_bel.core.GeneModification: "_gene_modification_to_string",
         momapy_bel.core.GeneAbundance: "_gene_abundance_to_string",
         momapy_bel.core.MicroRNAAbundance: "_microrna_abundance_to_string",
         momapy_bel.core.Pathology: "_pathology_to_string",
@@ -302,7 +306,18 @@ class BELWriter(momapy.io.core.Writer):
             args.append(cls._bel_element_to_string(gene_abundance.location))
         for variant in gene_abundance.variants:
             args.append(cls._bel_element_to_string(variant))
+        for modification in gene_abundance.modifications:
+            args.append(cls._bel_element_to_string(modification))
         return cls._make_function_string("g", args)
+
+    @classmethod
+    def _gene_modification_to_string(cls, gene_modification):
+        args = [
+            cls._make_namespace_identifier_arg(
+                gene_modification.namespace, gene_modification.identifier
+            )
+        ]
+        return cls._make_function_string("gmod", args)
 
     @classmethod
     def _microrna_abundance_to_string(cls, microrna):
@@ -318,6 +333,8 @@ class BELWriter(momapy.io.core.Writer):
             args.append(cls._bel_element_to_string(microrna.location))
         for variant in microrna.variants:
             args.append(cls._bel_element_to_string(variant))
+        for modification in microrna.modifications:
+            args.append(cls._bel_element_to_string(modification))
         return cls._make_function_string("m", args)
 
     @classmethod
@@ -415,6 +432,8 @@ class BELWriter(momapy.io.core.Writer):
             args.append(cls._bel_element_to_string(rna_abundance.location))
         for variant in rna_abundance.variants:
             args.append(cls._bel_element_to_string(variant))
+        for modification in rna_abundance.modifications:
+            args.append(cls._bel_element_to_string(modification))
         return cls._make_function_string("r", args)
 
     @classmethod
@@ -1514,6 +1533,25 @@ def _resolve_bel_molecular_activity(
     )
 
 
+def _resolve_bel_gene_modification(
+    arguments: list,
+) -> momapy_bel.core.GeneModification:
+    if len(arguments) != 1:
+        raise ValueError(f"gmod() takes one argument, got {len(arguments)}")
+    argument = arguments[0]
+    if isinstance(argument, str):
+        # A default-namespace modification such as `gmod(Me)`.
+        return momapy_bel.core.GeneModification(
+            namespace="", identifier=argument
+        )
+    namespace, identifier = _bel_namespace_identifier_from_argument(
+        argument, "gmod"
+    )
+    return momapy_bel.core.GeneModification(
+        namespace=namespace, identifier=identifier
+    )
+
+
 def _resolve_bel_variant(arguments: list) -> momapy_bel.core.Variant:
     if len(arguments) != 1:
         raise ValueError(f"var() takes one argument, got {len(arguments)}")
@@ -1721,11 +1759,14 @@ def _make_bel_nucleic_abundance_resolver(
             )
         location = None
         variants = []
+        modifications = []
         for argument in arguments[1:]:
             if isinstance(argument, momapy_bel.core.Location):
                 location = argument
             elif isinstance(argument, momapy_bel.core.Variant):
                 variants.append(argument)
+            elif isinstance(argument, momapy_bel.core.GeneModification):
+                modifications.append(argument)
             else:
                 raise ValueError(
                     f"unexpected argument {argument!r} in {function_name}()"
@@ -1736,6 +1777,7 @@ def _make_bel_nucleic_abundance_resolver(
             fusion=fusion,
             location=location,
             variants=tuple(variants),
+            modifications=tuple(modifications),
         )
 
     return _resolve
@@ -1929,6 +1971,8 @@ _BEL_FUNCTION_NAME_TO_RESOLVER = {
     "degradation": _resolve_bel_degradation,
     "g": _resolve_bel_gene_abundance,
     "geneAbundance": _resolve_bel_gene_abundance,
+    "gmod": _resolve_bel_gene_modification,
+    "geneModification": _resolve_bel_gene_modification,
     "list": _resolve_bel_list,
     "m": _resolve_bel_microrna_abundance,
     "microRNAAbundance": _resolve_bel_microrna_abundance,

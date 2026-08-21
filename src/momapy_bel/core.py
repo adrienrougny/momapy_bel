@@ -117,12 +117,29 @@ class Variant(BELModelElement):
     descriptor: str
 
 
+# extension introduced by PyBEL
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class GeneModification(BELModelElement):
+    """A `gmod()` modification.
+
+    `gmod()` is not part of BEL 2.1.3: it was introduced by PyBEL and proposed
+    as BEP-0006, a proposal that was never published. It is read and written
+    because real documents use it.
+    """
+
+    namespace: str = ""
+    identifier: str
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class GeneAbundance(Abundance):
     namespace: str | None
     identifier: str | None
     fusion: Fusion | None
     variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
+    modifications: tuple[GeneModification] = dataclasses.field(
+        default_factory=tuple
+    )
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -131,6 +148,9 @@ class MicroRNAAbundance(Abundance):
     identifier: str | None
     fusion: Fusion | None
     variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
+    modifications: tuple[GeneModification] = dataclasses.field(
+        default_factory=tuple
+    )
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -182,6 +202,9 @@ class RNAAbundance(Abundance):
     identifier: str | None
     fusion: Fusion | None
     variants: tuple[Variant] = dataclasses.field(default_factory=tuple)
+    modifications: tuple[GeneModification] = dataclasses.field(
+        default_factory=tuple
+    )
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
