@@ -10,7 +10,6 @@ import collections
 import dataclasses
 import os
 import typing
-import urllib.parse
 
 import frozendict
 import pyparsing
@@ -654,42 +653,21 @@ class BELWriter(momapy.io.core.Writer):
         return cls._make_unset_string(annotation.name)
 
     @classmethod
-    def _is_url(cls, s):
-        result = urllib.parse.urlparse(s)
-        if result.scheme != "":
-            return True
-        return False
-
-    @classmethod
-    def _get_as_type_from_as(cls, as_):
-        if isinstance(as_, (list, tuple)):
-            as_type = "LIST"
-        elif cls._is_url(as_):
-            as_type = "URL"
-        else:
-            as_type = "PATTERN"
-        return as_type
-
-    @classmethod
     def _annotation_definition_to_define_string(cls, annotation_definition):
-        as_type = cls._get_as_type_from_as(annotation_definition.as_)
-        if isinstance(annotation_definition.as_, str):
-            as_ = [annotation_definition.as_]
-        else:
-            as_ = annotation_definition.as_
         return cls._make_define_string(
-            "ANNOTATION", annotation_definition.name, as_type, as_
+            "ANNOTATION",
+            annotation_definition.name,
+            annotation_definition.as_type.value,
+            annotation_definition.as_,
         )
 
     @classmethod
     def _namespace_definition_to_define_string(cls, namespace_definition):
-        as_type = cls._get_as_type_from_as(namespace_definition.as_)
-        if isinstance(namespace_definition.as_, str):
-            as_ = [namespace_definition.as_]
-        else:
-            as_ = namespace_definition.as_
         return cls._make_define_string(
-            "NAMESPACE", namespace_definition.name, as_type, as_
+            "NAMESPACE",
+            namespace_definition.name,
+            namespace_definition.as_type.value,
+            namespace_definition.as_,
         )
 
     @classmethod
@@ -1159,25 +1137,29 @@ class BELReader(momapy.io.core.Reader):
         with_annotations: bool = True,
     ) -> None:
         results = _bel_define_line.parse_string(line, parse_all=True)
-        define_type, name, as_type = results[0], results[1], results[2]
-        values = tuple(results[3])
-        if as_type == "LIST":
-            as_ = values
-        elif len(values) != 1:
+        define_type, name = results[0], results[1]
+        as_type = momapy_bel.core.BELAsDefinitionType(results[2])
+        as_ = tuple(results[3])
+        if (
+            as_type is not momapy_bel.core.BELAsDefinitionType.LIST
+            and len(as_) != 1
+        ):
             raise ValueError(
-                f"DEFINE {define_type} {name} AS {as_type} takes one value, "
-                f"got {len(values)}"
+                f"DEFINE {define_type} {name} AS {as_type.value} takes one "
+                f"value, got {len(as_)}"
             )
-        else:
-            as_ = values[0]
         if define_type == "NAMESPACE":
             if model_builder is not None:
                 model_builder.namespace_definitions.add(
-                    momapy_bel.core.BELNamespaceDefinition(name=name, as_=as_)
+                    momapy_bel.core.BELNamespaceDefinition(
+                        name=name, as_type=as_type, as_=as_
+                    )
                 )
         elif with_annotations:
             name_to_annotation_definition[name] = (
-                momapy_bel.core.BELGenericAnnotationDefinition(name=name, as_=as_)
+                momapy_bel.core.BELGenericAnnotationDefinition(
+                    name=name, as_type=as_type, as_=as_
+                )
             )
 
 

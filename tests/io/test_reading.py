@@ -89,7 +89,9 @@ def test_glued_tokens_and_relations():
     assert model.namespace_definitions == frozenset(
         [
             momapy_bel.core.BELNamespaceDefinition(
-                name="HGNC", as_="https://example.org/hgnc.belns"
+                name="HGNC",
+                as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                as_=("https://example.org/hgnc.belns",),
             )
         ]
     )
@@ -118,9 +120,13 @@ def test_definitions():
     result = _read("definitions.bel", return_type="model")
     assert result.obj.namespace_definitions == frozenset(
         [
-            momapy_bel.core.BELNamespaceDefinition(name="DBSNP", as_=r"^rs\d+$"),
             momapy_bel.core.BELNamespaceDefinition(
-                name="HGNC", as_="https://example.org/hgnc.belns"
+                name="DBSNP", as_type=momapy_bel.core.BELAsDefinitionType.PATTERN, as_=(r"^rs\d+$",)
+            ),
+            momapy_bel.core.BELNamespaceDefinition(
+                name="HGNC",
+                as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                as_=("https://example.org/hgnc.belns",),
             ),
         ]
     )
@@ -128,10 +134,14 @@ def test_definitions():
     assert result.annotation_definitions == frozenset(
         [
             momapy_bel.core.BELGenericAnnotationDefinition(
-                name="Confidence", as_=("High", "Medium", "Low")
+                name="Confidence",
+                as_type=momapy_bel.core.BELAsDefinitionType.LIST,
+                as_=("High", "Medium", "Low"),
             ),
             momapy_bel.core.BELGenericAnnotationDefinition(
-                name="Species", as_="https://example.org/species.belanno"
+                name="Species",
+                as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                as_=("https://example.org/species.belanno",),
             ),
         ]
     )

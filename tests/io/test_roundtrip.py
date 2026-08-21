@@ -106,10 +106,14 @@ def _hand_built_model():
         namespace_definitions=frozenset(
             [
                 momapy_bel.core.BELNamespaceDefinition(
-                    name="HGNC", as_="https://example.org/hgnc.belns"
+                    name="HGNC",
+                    as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                    as_=("https://example.org/hgnc.belns",),
                 ),
                 momapy_bel.core.BELNamespaceDefinition(
-                    name="DBSNP", as_=r"^rs\d+$"
+                    name="DBSNP",
+                    as_type=momapy_bel.core.BELAsDefinitionType.PATTERN,
+                    as_=(r"^rs\d+$",),
                 ),
             ]
         ),
@@ -149,7 +153,9 @@ def _hand_built_model():
     annotation_definitions = frozenset(
         [
             momapy_bel.core.BELGenericAnnotationDefinition(
-                name="Confidence", as_=("High", "Medium", "Low")
+                name="Confidence",
+                as_type=momapy_bel.core.BELAsDefinitionType.LIST,
+                as_=("High", "Medium", "Low"),
             )
         ]
     )
@@ -172,6 +178,20 @@ def test_write_read_write_is_byte_stable(tmp_path):
     second_path = tmp_path / "second.bel"
     _write(result, second_path)
     assert first_path.read_text() == second_path.read_text()
+
+
+def test_url_and_pattern_survive_a_round_trip(tmp_path):
+    source = tmp_path / "source.bel"
+    source.write_text(
+        'DEFINE NAMESPACE HGNC AS URL "hgnc.belns"\n'
+        'DEFINE NAMESPACE GO AS PATTERN "GO:\\d+"\n'
+        "p(HGNC:APP)\n"
+    )
+    written = tmp_path / "written.bel"
+    _write(_read(source), written)
+    text = written.read_text()
+    assert 'AS URL "hgnc.belns"' in text
+    assert 'AS PATTERN "GO:\\d+"' in text
 
 
 def test_write_returns_a_writer_result(tmp_path):

@@ -40,7 +40,9 @@ def test_generic_annotation_hashes_without_definition():
 
 def test_generic_annotation_hashes_with_definition():
     definition = momapy_bel.core.BELGenericAnnotationDefinition(
-        name="Species", as_="http://example.org/species.belanno"
+        name="Species",
+        as_type=momapy_bel.core.BELAsDefinitionType.URL,
+        as_=("http://example.org/species.belanno",),
     )
     annotation = momapy_bel.core.BELGenericAnnotation(
         name="Species", definition=definition, args=("9606",)
@@ -51,11 +53,15 @@ def test_generic_annotation_hashes_with_definition():
 
 def test_definition_with_tuple_as_hashes():
     definition = momapy_bel.core.BELGenericAnnotationDefinition(
-        name="Confidence", as_=("High", "Medium", "Low")
+        name="Confidence",
+        as_type=momapy_bel.core.BELAsDefinitionType.LIST,
+        as_=("High", "Medium", "Low"),
     )
     assert hash(definition)
     namespace_definition = momapy_bel.core.BELNamespaceDefinition(
-        name="Custom", as_=("A", "B")
+        name="Custom",
+        as_type=momapy_bel.core.BELAsDefinitionType.LIST,
+        as_=("A", "B"),
     )
     assert hash(namespace_definition)
 
@@ -83,7 +89,13 @@ def test_builder_round_trip():
     model = momapy_bel.core.BELModel(
         statements=frozenset([_statement()]),
         namespace_definitions=frozenset(
-            [momapy_bel.core.BELNamespaceDefinition(name="HGNC", as_="hgnc.belns")]
+            [
+                momapy_bel.core.BELNamespaceDefinition(
+                    name="HGNC",
+                    as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                    as_=("hgnc.belns",),
+                )
+            ]
         ),
     )
     assert (
@@ -93,8 +105,16 @@ def test_builder_round_trip():
 
 
 def test_namespace_definition_order_does_not_matter():
-    first = momapy_bel.core.BELNamespaceDefinition(name="HGNC", as_="hgnc.belns")
-    second = momapy_bel.core.BELNamespaceDefinition(name="CHEBI", as_="chebi.belns")
+    first = momapy_bel.core.BELNamespaceDefinition(
+        name="HGNC",
+        as_type=momapy_bel.core.BELAsDefinitionType.URL,
+        as_=("hgnc.belns",),
+    )
+    second = momapy_bel.core.BELNamespaceDefinition(
+        name="CHEBI",
+        as_type=momapy_bel.core.BELAsDefinitionType.URL,
+        as_=("chebi.belns",),
+    )
     one = momapy_bel.core.BELModel(namespace_definitions=frozenset([first, second]))
     two = momapy_bel.core.BELModel(namespace_definitions=frozenset([second, first]))
     assert one == two
@@ -105,7 +125,13 @@ def test_is_submodel_is_directional():
     large = momapy_bel.core.BELModel(
         statements=frozenset([_statement(), _protein("MAPT")]),
         namespace_definitions=frozenset(
-            [momapy_bel.core.BELNamespaceDefinition(name="HGNC", as_="hgnc.belns")]
+            [
+                momapy_bel.core.BELNamespaceDefinition(
+                    name="HGNC",
+                    as_type=momapy_bel.core.BELAsDefinitionType.URL,
+                    as_=("hgnc.belns",),
+                )
+            ]
         ),
     )
     assert small.is_submodel(large)
@@ -189,7 +215,8 @@ def test_every_core_class_instantiates_and_builds():
         "to_namespace": "GO",
         "to_identifier": "extracellular space",
         "name": "HGNC",
-        "as_": "hgnc.belns",
+        "as_type": momapy_bel.core.BELAsDefinitionType.URL,
+        "as_": ("hgnc.belns",),
         "args": ("PubMed", "12345"),
     }
     seen = 0

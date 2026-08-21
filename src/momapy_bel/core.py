@@ -1,4 +1,5 @@
 import dataclasses
+import enum
 
 import momapy.core
 import momapy.core.map
@@ -342,16 +343,24 @@ class NoCorrelation(BELModelElement):
     target: BELModelElement
 
 
+class BELAsDefinitionType(enum.Enum):
+    URL = "URL"
+    PATTERN = "PATTERN"
+    LIST = "LIST"
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class BELNamespaceDefinition(BELModelElement):
     name: str
-    as_: str | tuple[str]
+    as_type: BELAsDefinitionType
+    as_: tuple[str, ...]
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class BELGenericAnnotationDefinition:
     name: str
-    as_: str | tuple[str]
+    as_type: BELAsDefinitionType
+    as_: tuple[str, ...]
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
